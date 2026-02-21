@@ -71,6 +71,10 @@ class ConfigNames {
 
 	public const UsePrivateWikis = 'CreateWikiUsePrivateWikis';
 
+	public const EnableLoadoutSelector = 'CreateWikiEnableLoadoutSelector';
+
+	public const WikiLoadouts = 'CreateWikiLoadouts';
+
 	/**
 	 * RequestWiki config
 	 */

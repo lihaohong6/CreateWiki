@@ -15,6 +15,7 @@ use Miraheze\CreateWiki\Services\CreateWikiNotificationsManager;
 use Miraheze\CreateWiki\Services\CreateWikiRestUtils;
 use Miraheze\CreateWiki\Services\CreateWikiValidator;
 use Miraheze\CreateWiki\Services\RemoteWikiFactory;
+use Miraheze\CreateWiki\Services\WikiLoadoutForm;
 use Miraheze\CreateWiki\Services\WikiManagerFactory;
 use Miraheze\CreateWiki\Services\WikiRequestManager;
 use Miraheze\CreateWiki\Services\WikiRequestViewer;
@@ -125,6 +126,14 @@ return [
 			)
 		);
 	},
+	'WikiLoadoutForm' => static function ( MediaWikiServices $services ): WikiLoadoutForm {
+		return new WikiLoadoutForm(
+			new ServiceOptions(
+				WikiLoadoutForm::CONSTRUCTOR_OPTIONS,
+				$services->get( 'CreateWikiConfig' )
+			)
+		);
+	},
 	'WikiRequestViewer' => static function ( MediaWikiServices $services ): WikiRequestViewer {
 		return new WikiRequestViewer(
 			RequestContext::getMain(),
@@ -138,7 +147,8 @@ return [
 			new ServiceOptions(
 				WikiRequestViewer::CONSTRUCTOR_OPTIONS,
 				$services->get( 'CreateWikiConfig' )
-			)
+			),
+			$services->get( 'WikiLoadoutForm' )
 		);
 	},
 ];

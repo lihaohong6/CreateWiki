@@ -11,6 +11,7 @@ use Miraheze\CreateWiki\ConfigNames;
 use Miraheze\CreateWiki\Hooks\CreateWikiHookRunner;
 use Miraheze\CreateWiki\Services\CreateWikiDatabaseUtils;
 use Miraheze\CreateWiki\Services\CreateWikiValidator;
+use Miraheze\CreateWiki\Services\WikiLoadoutForm;
 use Miraheze\CreateWiki\Services\WikiRequestManager;
 use Wikimedia\Stats\StatsFactory;
 use function array_diff_key;
@@ -27,6 +28,7 @@ class SpecialRequestWiki extends FormSpecialPage {
 		private readonly CreateWikiValidator $validator,
 		private readonly StatsFactory $statsFactory,
 		private readonly WikiRequestManager $wikiRequestManager,
+		private readonly WikiLoadoutForm $wikiLoadoutForm,
 	) {
 		parent::__construct( 'RequestWiki', 'requestwiki' );
 	}
@@ -126,6 +128,10 @@ class SpecialRequestWiki extends FormSpecialPage {
 				'required' => true,
 				'options' => $this->getConfig()->get( ConfigNames::Purposes ),
 			];
+		}
+
+		if ( $this->wikiLoadoutForm->isEnabled() ) {
+			$formDescriptor['loadout'] = $this->wikiLoadoutForm->getFormDescriptor();
 		}
 
 		$formDescriptor['guidance'] = [

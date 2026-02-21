@@ -8,6 +8,7 @@ use MediaWiki\SpecialPage\FormSpecialPage;
 use Miraheze\CreateWiki\ConfigNames;
 use Miraheze\CreateWiki\Services\CreateWikiDatabaseUtils;
 use Miraheze\CreateWiki\Services\CreateWikiValidator;
+use Miraheze\CreateWiki\Services\WikiLoadoutForm;
 use Miraheze\CreateWiki\Services\WikiManagerFactory;
 
 class SpecialCreateWiki extends FormSpecialPage {
@@ -16,6 +17,7 @@ class SpecialCreateWiki extends FormSpecialPage {
 		private readonly CreateWikiDatabaseUtils $databaseUtils,
 		private readonly CreateWikiValidator $validator,
 		private readonly WikiManagerFactory $wikiManagerFactory,
+		private readonly WikiLoadoutForm $wikiLoadoutForm,
 	) {
 		parent::__construct( 'CreateWiki', 'createwiki' );
 	}
@@ -79,6 +81,10 @@ class SpecialCreateWiki extends FormSpecialPage {
 			];
 		}
 
+		if ( $this->wikiLoadoutForm->isEnabled() ) {
+			$formDescriptor['loadout'] = $this->wikiLoadoutForm->getFormDescriptor();
+		}
+
 		$formDescriptor['reason'] = [
 			'type' => 'textarea',
 			'rows' => 10,
@@ -92,6 +98,11 @@ class SpecialCreateWiki extends FormSpecialPage {
 
 	/** @inheritDoc */
 	public function onSubmit( array $formData ): bool {
+		$extra = [];
+		if ( $this->wikiLoadoutForm->isEnabled() && isset( $formData['loadout'] ) && $formData['loadout'] ) {
+			$extra['loadout'] = $formData['loadout'];
+		}
+
 		$wikiManager = $this->wikiManagerFactory->newInstance( $formData['dbname'] );
 		$wikiManager->create(
 			sitename: $formData['sitename'],
@@ -101,7 +112,7 @@ class SpecialCreateWiki extends FormSpecialPage {
 			requester: $formData['requester'],
 			actor: $this->getContext()->getUser()->getName(),
 			reason: $formData['reason'],
-			extra: []
+			extra: $extra
 		);
 
 		$this->getOutput()->addHTML(

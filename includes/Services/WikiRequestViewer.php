@@ -49,6 +49,7 @@ class WikiRequestViewer {
 		private readonly UserLinkRenderer $userLinkRenderer,
 		private readonly WikiRequestManager $wikiRequestManager,
 		private readonly ServiceOptions $options,
+		private readonly WikiLoadoutForm $wikiLoadoutForm,
 	) {
 		$options->assertRequiredOptions( self::CONSTRUCTOR_OPTIONS );
 	}
@@ -141,6 +142,18 @@ class WikiRequestViewer {
 				'section' => 'details',
 			],
 		];
+
+		if ( $this->wikiLoadoutForm->isEnabled() ) {
+			$loadout = $this->wikiRequestManager->getExtraFieldData( 'loadout' );
+			if ( $loadout ) {
+				$formDescriptor['loadout'] = [
+					'type' => 'info',
+					'label-message' => 'createwiki-label-loadout',
+					'section' => 'details',
+					'default' => $loadout,
+				];
+			}
+		}
 
 		foreach ( $this->wikiRequestManager->getComments() as $comment ) {
 			$formDescriptor['comment' . $comment['timestamp'] ] = [
@@ -264,6 +277,14 @@ class WikiRequestViewer {
 					'cssclass' => 'ext-createwiki-infuse',
 					'section' => 'editing',
 				];
+			}
+
+			if ( $this->wikiLoadoutForm->isEnabled() ) {
+				$loadoutDescriptor = $this->wikiLoadoutForm->getFormDescriptor();
+				$loadoutDescriptor['default'] = $this->wikiRequestManager->getExtraFieldData( 'loadout' ) ?? '';
+				$loadoutDescriptor['disabled'] = $this->wikiRequestManager->isLocked();
+				$loadoutDescriptor['section'] = 'editing';
+				$formDescriptor['edit-loadout'] = $loadoutDescriptor;
 			}
 
 			$formDescriptor['submit-edit'] = [
@@ -635,6 +656,18 @@ class WikiRequestViewer {
 
 			// Handle approve action
 			if ( $formData['handle-action'] === 'approve' ) {
+				// Update extra fields before approving
+				$extraData = [];
+				foreach ( $this->extraFields as $field => $_ ) {
+					if ( isset( $formData[$field] ) ) {
+						$extraData[$field] = $formData[$field];
+					}
+				}
+
+				if ( $extraData ) {
+					$this->wikiRequestManager->setExtraFieldsData( $extraData );
+				}
+
 				// This will create the wiki
 				$this->wikiRequestManager->approve( $user, $formData['handle-comment'] );
 				$this->wikiRequestManager->tryExecuteQueryBuilder();

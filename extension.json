@@ -164,7 +164,8 @@
 			"services": [
 				"CreateWikiDatabaseUtils",
 				"CreateWikiValidator",
-				"WikiManagerFactory"
+				"WikiManagerFactory",
+				"WikiLoadoutForm"
 			]
 		},
 		"RequestWiki": {
@@ -192,6 +193,12 @@
 	"Hooks": {
 		"BeforeCreateEchoEvent": {
 			"handler": "Notifications"
+		},
+		"CreateWikiAfterCreationWithExtraData": {
+			"handler": "LoadoutImport"
+		},
+		"CreateWikiCreationExtraFields": {
+			"handler": "LoadoutImport"
 		},
 		"GetAllBlockActions": {
 			"handler": "Main"
@@ -246,6 +253,12 @@
 		},
 		"Notifications": {
 			"class": "Miraheze\\CreateWiki\\Hooks\\Handlers\\Notifications"
+		},
+		"LoadoutImport": {
+			"class": "Miraheze\\CreateWiki\\Hooks\\CreateWikiLoadoutImportHook",
+			"services": [
+				"CreateWikiConfig"
+			]
 		}
 	},
 	"RestRoutes": [
@@ -448,6 +461,14 @@
 		"RequestWikiMinimumLength": {
 			"description": "Integer. Minimum length for the reason field within RequestWiki.",
 			"value": false
+		},
+		"CreateWikiEnableLoadoutSelector": {
+			"description": "Boolean. Whether to enable the loadout selector in wiki creation forms.",
+			"value": false
+		},
+		"CreateWikiLoadouts": {
+			"description": "Array. Associative array mapping loadout names to configuration arrays. Each loadout config should have an 'xml' key pointing to the XML dump file path. Example: { 'default': { 'xml': '/path/to/default_dump.xml' } }",
+			"value": {}
 		}
 	},
 	"ConfigRegistry": {
